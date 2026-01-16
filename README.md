@@ -2,13 +2,13 @@
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
-Forked from [bitcoinjs-message](https://github.com/bitcoinjs/bitcoinjs-message). Published to npm as `@landabaso/btcmessage`.
+Forked from [bitcoinjs-message](https://github.com/bitcoinjs/bitcoinjs-message). Published to npm as `@jl.landabaso/btcmessage`.
 
 ## Examples (Note about Electrum support at the bottom)
 
 ``` javascript
 var tinysecp = require('tiny-secp256k1');
-var MessageFactory = require('@landabaso/btcmessage').MessageFactory
+var MessageFactory = require('@jl.landabaso/btcmessage').MessageFactory
 var bitcoinMessage = MessageFactory(tinysecp)
 ```
 
