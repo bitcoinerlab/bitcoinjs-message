@@ -1,15 +1,14 @@
 # bitcoinjs-message
-[![NPM Package](https://img.shields.io/npm/v/bitcoinjs-message.svg?style=flat-square)](https://www.npmjs.org/package/bitcoinjs-message)
-[![Build Status](https://img.shields.io/travis/bitcoinjs/bitcoinjs-message.svg?branch=master&style=flat-square)](https://travis-ci.org/bitcoinjs/bitcoinjs-message)
-[![Dependency status](https://img.shields.io/david/bitcoinjs/bitcoinjs-message.svg?style=flat-square)](https://david-dm.org/bitcoinjs/bitcoinjs-message#info=dependencies)
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
+
+Forked from [bitcoinjs-message](https://github.com/bitcoinjs/bitcoinjs-message). Published to npm as `@landabaso/btcmessage`.
 
 ## Examples (Note about Electrum support at the bottom)
 
 ``` javascript
 var tinysecp = require('tiny-secp256k1');
-var MessageFactory = require('bitcoinjs-message').MessageFactory
+var MessageFactory = require('@landabaso/btcmessage').MessageFactory
 var bitcoinMessage = MessageFactory(tinysecp)
 ```
 

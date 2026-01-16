@@ -1,14 +1,14 @@
 {
-  "name": "bitcoinjs-message",
+  "name": "@landabaso/btcmessage",
   "version": "3.0.0",
-  "description": "bitcoinjs-message",
+  "description": "Fork of bitcoinjs-message",
   "keywords": [
     "bitcoinjs-message",
     "bitcoin"
   ],
-  "homepage": "https://github.com/bitcoinjs/bitcoinjs-message",
+  "homepage": "https://github.com/landabaso/bitcoinjs-message",
   "bugs": {
-    "url": "https://github.com/bitcoinjs/bitcoinjs-message/issues"
+    "url": "https://github.com/landabaso/bitcoinjs-message/issues"
   },
   "license": "MIT",
   "files": [
@@ -19,7 +19,7 @@
   "types": "./index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bitcoinjs/bitcoinjs-message.git"
+    "url": "https://github.com/landabaso/bitcoinjs-message.git"
   },
   "scripts": {
     "format": "npm run prettier -- --write",
