@@ -1,6 +1,14 @@
-const bs58check = require('bs58check');
-const bech32 = require('bech32');
+const m = require('bs58check');
+const bs58check = m.default || m;
+const { bech32 } = require('bech32');
 const varuint = require('varuint-bitcoin');
+const {
+  compare,
+  concat,
+  fromBase64,
+  fromHex,
+  fromUtf8,
+} = require('uint8array-tools');
 const _ripemd160 = require('@noble/hashes/ripemd160').ripemd160;
 const _sha256 = require('@noble/hashes/sha256').sha256;
 
@@ -10,10 +18,10 @@ const SEGWIT_TYPES = {
 };
 
 function sha256(buffer) {
-  return Buffer.from(_sha256(Uint8Array.from(buffer)));
+  return _sha256(Uint8Array.from(buffer));
 }
 function hash160(buffer) {
-  return Buffer.from(_ripemd160(_sha256(Uint8Array.from(buffer))));
+  return _ripemd160(_sha256(Uint8Array.from(buffer)));
 }
 function hash256(buffer) {
   return sha256(sha256(buffer));
@@ -26,13 +34,16 @@ function encodeSignature(signature, recovery, compressed, segwitType) {
   } else {
     if (compressed) recovery += 4;
   }
-  return Buffer.concat([Buffer.alloc(1, recovery + 27), signature]);
+  const encoded = new Uint8Array(1 + signature.length);
+  encoded[0] = recovery + 27;
+  encoded.set(signature, 1);
+  return encoded;
 }
 
 function decodeSignature(buffer) {
   if (buffer.length !== 65) throw new Error('Invalid signature length');
 
-  const flagByte = buffer.readUInt8(0) - 27;
+  const flagByte = buffer[0] - 27;
   if (flagByte > 15 || flagByte < 0) {
     throw new Error('Invalid signature parameter');
   }
@@ -53,41 +64,46 @@ function isSigner(obj) {
   return obj && typeof obj.signRecoverable === 'function';
 }
 
+function isUint8Array(value) {
+  return value instanceof Uint8Array;
+}
+
 function segwitRedeemHash(publicKeyHash) {
-  const redeemScript = Buffer.concat([
-    Buffer.from('0014', 'hex'),
-    publicKeyHash,
-  ]);
+  const redeemScript = concat([fromHex('0014'), publicKeyHash]);
   return hash160(redeemScript);
 }
 
 function decodeBech32(address) {
   const result = bech32.decode(address);
   const data = bech32.fromWords(result.words.slice(1));
-  return Buffer.from(data);
+  return Uint8Array.from(data);
 }
 
 function MessageFactory(secp256k1) {
   function magicHash(message, messagePrefix) {
     messagePrefix = messagePrefix || '\u0018Bitcoin Signed Message:\n';
-    if (!Buffer.isBuffer(messagePrefix)) {
-      messagePrefix = Buffer.from(messagePrefix, 'utf8');
+    if (!isUint8Array(messagePrefix)) {
+      messagePrefix = fromUtf8(String(messagePrefix));
     }
-    if (!Buffer.isBuffer(message)) {
-      message = Buffer.from(message, 'utf8');
+    if (!isUint8Array(message)) {
+      message = fromUtf8(String(message));
     }
     const messageVISize = varuint.encodingLength(message.length);
-    const buffer = Buffer.allocUnsafe(
+    const buffer = new Uint8Array(
       messagePrefix.length + messageVISize + message.length,
     );
-    messagePrefix.copy(buffer, 0);
+    buffer.set(messagePrefix, 0);
     varuint.encode(message.length, buffer, messagePrefix.length);
-    message.copy(buffer, messagePrefix.length + messageVISize);
+    buffer.set(message, messagePrefix.length + messageVISize);
     return hash256(buffer);
   }
 
   function prepareSign(messagePrefixArg, sigOptions) {
-    if (typeof messagePrefixArg === 'object' && sigOptions === undefined) {
+    if (
+      !isUint8Array(messagePrefixArg) &&
+      typeof messagePrefixArg === 'object' &&
+      sigOptions === undefined
+    ) {
       sigOptions = messagePrefixArg;
       messagePrefixArg = undefined;
     }
@@ -172,8 +188,7 @@ function MessageFactory(secp256k1) {
     messagePrefix,
     checkSegwitAlways,
   ) {
-    if (!Buffer.isBuffer(signature))
-      signature = Buffer.from(signature, 'base64');
+    if (!isUint8Array(signature)) signature = fromBase64(signature);
 
     const parsed = decodeSignature(signature);
 
@@ -209,12 +224,15 @@ function MessageFactory(secp256k1) {
         try {
           expected = decodeBech32(address);
           // if address is bech32 it is not p2sh
-          return publicKeyHash.equals(expected);
+          return compare(publicKeyHash, expected) === 0;
         } catch (e) {
           const redeemHash = segwitRedeemHash(publicKeyHash);
           expected = bs58check.decode(address).slice(1);
           // base58 can be p2pkh or p2sh-p2wpkh
-          return publicKeyHash.equals(expected) || redeemHash.equals(expected);
+          return (
+            compare(publicKeyHash, expected) === 0 ||
+            compare(redeemHash, expected) === 0
+          );
         }
       } else {
         actual = publicKeyHash;
@@ -222,7 +240,7 @@ function MessageFactory(secp256k1) {
       }
     }
 
-    return actual.equals(expected);
+    return compare(actual, expected) === 0;
   }
 
   return { magicHash, sign, signAsync, verify };

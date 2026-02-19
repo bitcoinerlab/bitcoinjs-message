@@ -1,14 +1,14 @@
 {
-  "name": "@jl.landabaso/btcmessage",
-  "version": "3.0.0",
+  "name": "@bitcoinerlab/btcmessage",
+  "version": "4.0.0",
   "description": "Fork of bitcoinjs-message",
   "keywords": [
     "bitcoinjs-message",
     "bitcoin"
   ],
-  "homepage": "https://github.com/landabaso/bitcoinjs-message",
+  "homepage": "https://github.com/bitcoinerlab/bitcoinjs-message",
   "bugs": {
-    "url": "https://github.com/landabaso/bitcoinjs-message/issues"
+    "url": "https://github.com/bitcoinerlab/bitcoinjs-message/issues"
   },
   "license": "MIT",
   "files": [
@@ -19,7 +19,7 @@
   "types": "./index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/landabaso/bitcoinjs-message.git"
+    "url": "https://github.com/bitcoinerlab/bitcoinjs-message.git"
   },
   "scripts": {
     "format": "npm run prettier -- --write",
@@ -31,19 +31,20 @@
     "unit": "tape test/*.js"
   },
   "dependencies": {
-    "bech32": "^1.1.4",
-    "bs58check": "^3.0.1",
-    "varuint-bitcoin": "^1.1.2"
+    "bech32": "^2.0.0",
+    "bs58check": "^4.0.0",
+    "uint8array-tools": "^0.0.9",
+    "varuint-bitcoin": "^2.0.0"
   },
   "devDependencies": {
-    "bitcoinjs-lib": "^6.1.5",
-    "ecpair": "^2.1.0",
+    "bitcoinjs-lib": "^7.0.1",
+    "ecpair": "^3.0.1",
     "nyc": "^14.1.1",
     "prettier": "^3.2.5",
     "tape": "^4.5.1",
-    "tiny-secp256k1": "^2.2.3"
+    "tiny-secp256k1": "^2.2.4"
   },
   "engines": {
-    "node": ">=0.10"
+    "node": ">=20.0.0"
   }
 }
