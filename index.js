@@ -205,6 +205,7 @@ function MessageFactory(secp256k1) {
       parsed.recovery,
       parsed.compressed,
     );
+    if (!publicKey) return false;
     const publicKeyHash = hash160(publicKey);
     let actual, expected;
 

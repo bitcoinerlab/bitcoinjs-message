@@ -40,7 +40,7 @@ interface TinySecp256k1Interface {
     signature: Uint8Array,
     recoveryId: RecoveryIdType,
     compressed?: boolean,
-  ): Uint8Array;
+  ): Uint8Array | null;
 }
 
 export interface MessageAPI {
