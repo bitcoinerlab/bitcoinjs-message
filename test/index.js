@@ -1,7 +1,15 @@
 const test = require('tape').test;
-const bs58check = require('bs58check');
-const bech32 = require('bech32');
+const bs58check = require('bs58check').default;
+const { bech32 } = require('bech32');
 const secp256k1 = require('tiny-secp256k1');
+const {
+  concat,
+  fromBase64,
+  fromHex,
+  fromUtf8,
+  toBase64,
+  toHex,
+} = require('uint8array-tools');
 const MessageFactory = require('../').MessageFactory;
 const message = MessageFactory(secp256k1);
 const payments = require('bitcoinjs-lib').payments;
@@ -21,7 +29,7 @@ fixtures.valid.magicHash.forEach(f => {
     'produces the magicHash for "' + f.message + '" (' + f.network + ')',
     t => {
       const actual = message.magicHash(f.message, getMessagePrefix(f.network));
-      t.same(actual.toString('hex'), f.magicHash);
+      t.same(toHex(actual), f.magicHash);
       t.end();
     },
   );
@@ -29,7 +37,7 @@ fixtures.valid.magicHash.forEach(f => {
 
 fixtures.valid.sign.forEach(f => {
   test('signRecoverable: ' + f.description, async t => {
-    const pk = Buffer.from(f.d, 'hex');
+    const pk = fromHex(f.d);
     const signer = (hash, ex) => secp256k1.signRecoverable(hash, pk, ex);
     const signerAsync = async (hash, ex) =>
       secp256k1.signRecoverable(hash, pk, ex);
@@ -63,11 +71,11 @@ fixtures.valid.sign.forEach(f => {
       false,
       getMessagePrefix(f.network),
     );
-    t.same(signature.toString('base64'), f.signature);
-    t.same(signature2.toString('base64'), f.signature);
-    t.same(signature3.toString('base64'), f.signature);
-    t.same(signature4.toString('base64'), f.signature);
-    t.same(signature5.toString('base64'), f.signature);
+    t.same(toBase64(signature), f.signature);
+    t.same(toBase64(signature2), f.signature);
+    t.same(toBase64(signature3), f.signature);
+    t.same(toBase64(signature4), f.signature);
+    t.same(toBase64(signature5), f.signature);
 
     if (f.compressed) {
       signature = message.sign(
@@ -76,7 +84,7 @@ fixtures.valid.sign.forEach(f => {
         true,
         getMessagePrefix(f.network),
       );
-      t.same(signature.toString('base64'), f.compressed.signature);
+      t.same(toBase64(signature), f.compressed.signature);
     }
 
     if (f.segwit) {
@@ -88,7 +96,7 @@ fixtures.valid.sign.forEach(f => {
           getMessagePrefix(f.network),
           { segwitType: 'p2sh(p2wpkh)' },
         );
-        t.same(signature.toString('base64'), f.segwit.P2SH_P2WPKH.signature);
+        t.same(toBase64(signature), f.segwit.P2SH_P2WPKH.signature);
       }
       if (f.segwit.P2WPKH) {
         signature = message.sign(
@@ -98,7 +106,7 @@ fixtures.valid.sign.forEach(f => {
           getMessagePrefix(f.network),
           { segwitType: 'p2wpkh' },
         );
-        t.same(signature.toString('base64'), f.segwit.P2WPKH.signature);
+        t.same(toBase64(signature), f.segwit.P2WPKH.signature);
       }
     }
 
@@ -185,7 +193,7 @@ fixtures.invalid.signature.forEach(f => {
   test('decode signature: throws on ' + f.hex, t => {
     t.throws(
       () => {
-        message.verify(null, null, Buffer.from(f.hex, 'hex'), null);
+        message.verify(null, null, fromHex(f.hex), null);
       },
       new RegExp('^Error: ' + f.exception + '$'),
     );
@@ -217,7 +225,7 @@ fixtures.randomSig.forEach(f => {
         f.message,
         privateKey,
         keyPair.compressed,
-        { extraEntropy: Buffer.from(s.sigData, 'base64') },
+        { extraEntropy: fromBase64(s.sigData) },
       );
       t.true(message.verify(f.message, address, signature));
     });
@@ -236,7 +244,7 @@ test('Check that compressed signatures can be verified as segwit', t => {
     pubkey: keyPair.publicKey,
   });
   const p2shp2wpkhAddress = bs58check.encode(
-    Buffer.concat([Buffer.from([5]), p2shp2wpkhRedeemHash]),
+    concat([Uint8Array.from([5]), p2shp2wpkhRedeemHash]),
   );
   const p2wpkhAddress = bech32.encode(
     'bc',
@@ -258,7 +266,7 @@ test('Check that compressed signatures can be verified as segwit', t => {
   t.true(message.verify(msg, p2shp2wpkhAddress, signature) === false);
   t.throws(() => {
     message.verify(msg, p2wpkhAddress, signature);
-  }, new RegExp('^Error: Non-base58 character$'));
+  }, new RegExp('^Error: (Non-base58 character|Invalid checksum)$'));
 
   const signatureUncompressed = message.sign(msg, privateKey, false);
   t.throws(() => {
@@ -281,7 +289,7 @@ test('Check that invalid segwitType fails', t => {
   t.end();
 });
 
-test('Check that Buffers and wrapped Strings are accepted', t => {
+test('Check that Uint8Arrays and wrapped Strings are accepted', t => {
   const keyPair = ECPair.fromWIF(
     'L3n3e2LggPA5BuhXyBetWGhUfsEBTFe9Y6LhyAhY2mAXkA9jNE56',
   );
@@ -289,14 +297,14 @@ test('Check that Buffers and wrapped Strings are accepted', t => {
 
   // eslint-disable-next-line no-new-wrappers
   const sig = message.sign(
-    Buffer.from('Sign me', 'utf8'),
+    fromUtf8('Sign me'),
     privateKey,
     true,
-    Buffer.from([1, 2, 3, 4]),
+    Uint8Array.from([1, 2, 3, 4]),
     { segwitType: new String('p2wpkh') },
   );
   t.equals(
-    sig.toString('hex'),
+    toHex(sig),
     '276e5e5e75196dd93bba7b98f29f944156286d94cb34c376822c6ebc93e08d7b2d177e1f2215b2879caee53f39a376cf350ffdca70df4398a12d5b5adaf3b0f0bc',
   );
 
@@ -307,12 +315,9 @@ const _ripemd160 = require('@noble/hashes/ripemd160').ripemd160;
 const _sha256 = require('@noble/hashes/sha256').sha256;
 
 function hash160(buffer) {
-  return Buffer.from(_ripemd160(_sha256(Uint8Array.from(buffer))));
+  return _ripemd160(_sha256(Uint8Array.from(buffer)));
 }
 function segwitRedeemHash(publicKeyHash) {
-  const redeemScript = Buffer.concat([
-    Buffer.from('0014', 'hex'),
-    publicKeyHash,
-  ]);
+  const redeemScript = concat([fromHex('0014'), publicKeyHash]);
   return hash160(redeemScript);
 }
