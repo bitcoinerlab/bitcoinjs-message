@@ -1,6 +1,6 @@
 {
   "name": "@bitcoinerlab/btcmessage",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Fork of bitcoinjs-message",
   "keywords": [
     "bitcoinjs-message",
@@ -31,19 +31,19 @@
     "unit": "tape test/*.js"
   },
   "dependencies": {
-    "@noble/hashes": "^1.2.0",
+    "@noble/hashes": "^1.8.0",
     "bech32": "^2.0.0",
     "bs58check": "^4.0.0",
-    "uint8array-tools": "^0.0.9",
-    "varuint-bitcoin": "^2.0.0"
+    "uint8array-tools": "^0.0.10",
+    "varuint-bitcoin": "^2.0.1"
   },
   "devDependencies": {
-    "bitcoinjs-lib": "^7.0.1",
-    "ecpair": "^3.0.1",
+    "bitcoinjs-lib": "^7.0.5",
+    "ecpair": "^3.0.2",
     "nyc": "^14.1.1",
     "prettier": "^3.2.5",
     "tape": "^4.5.1",
-    "tiny-secp256k1": "^2.2.4"
+    "tiny-secp256k1": "^2.2.5"
   },
   "engines": {
     "node": ">=20.0.0"
