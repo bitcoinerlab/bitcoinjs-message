@@ -13,6 +13,8 @@ var toBase64 = require('uint8array-tools').toBase64;
 var bitcoinMessage = MessageFactory(tinysecp);
 ```
 
+When using `tiny-secp256k1` or `@bitcoin-js/tiny-secp256k1-asmjs`, use version 2.2.5 or later. `MessageFactory` uses the backend supplied by your application, so updating this package alone does not update that backend.
+
 > Breaking change in v4: this library is Uint8Array-first and does not return Buffer instances.
 
 > sign(message, privateKey, compressed[, network.messagePrefix, sigOptions])
